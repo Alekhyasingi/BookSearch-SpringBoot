@@ -16,7 +16,6 @@ import com.search.book.booksearch.model.ApiResponse;
 import com.search.book.booksearch.model.Item;
 import com.search.book.booksearch.model.Library;
 
-
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/search")
@@ -24,6 +23,7 @@ public class SearchController {
 
 	@Autowired
 	private RestTemplate restTemplate;
+
 // add service layer for all the business logic
 	// add the wrapper of response to all he methods for consistent response
 	@GetMapping
@@ -32,7 +32,7 @@ public class SearchController {
 		Library library = restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q=search+terms.",
 				Library.class);
 
-		 return new ApiResponse<>(HttpStatus.OK.value(), "List of books fetched successfully.",library.getItems()); 
+		return new ApiResponse<>(HttpStatus.OK.value(), "List of books fetched successfully.", library.getItems());
 	}
 
 	@GetMapping("/{id}")
@@ -43,11 +43,12 @@ public class SearchController {
 	}
 
 	@GetMapping("/title/{title}")
-	public List<Item> getBookDetailsByTitle(@PathVariable String title) {
-
-		return restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q=search+terms.", Library.class)
-				.getItems().stream().filter(item -> item.getVolumeInfo().getTitle().contains(title))
-				.collect(Collectors.toList());
+	public ApiResponse<List<Item>> getBookDetailsByTitle(@PathVariable String title) {
+		if(title==null)return null;
+		return new ApiResponse<>(HttpStatus.OK.value(), "List of books fetched successfully with title. " + title,
+				restTemplate.getForObject("https://www.googleapis.com/books/v1/volumes?q=search+terms.", Library.class)
+						.getItems().stream().filter(item -> item.getVolumeInfo().getTitle().toLowerCase().contains(title.toLowerCase()))
+						.collect(Collectors.toList()));
 
 	}
 
